@@ -1,0 +1,323 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class CalculatorFrame extends JFrame implements ActionListener,KeyListener{
+
+    private final static int FRAME_WIDTH = 420;
+    private final static int FRAME_HEIGHT = 550;
+    private final static int FUNC_COUNT = 10;
+    private final static int NUM_COUNT = 10;
+
+    ImageIcon calcLogo;
+
+    JButton addButton, subButton,mulButton,divButton,modButton,
+            signSwapButton,delButton,clrButton,dotButton,equButton;
+
+    JButton[] functionButtons = new JButton[FUNC_COUNT];
+    JButton[] numberButtons = new JButton[NUM_COUNT];
+
+    Font buttonFont = new Font("Consolas", Font.PLAIN,20);
+    Font textFieldFont = new Font("Consolas", Font.PLAIN,40);
+
+    JTextField textField;
+    JPanel buttonsPanel;
+
+    CalculatorLogic calculator = new CalculatorLogic();
+
+    CalculatorFrame(){
+
+        frameSetup();
+
+        //Calling methods to set up different components
+        textFieldSetup();
+        buttonsPanelSetup();
+        buttonsSetup();
+
+        //Make the frame visible
+        setVisible(true);
+
+    }
+
+    private void frameSetup(){
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(FRAME_WIDTH,FRAME_HEIGHT);
+        setLocationRelativeTo(null);
+        setTitle("Calculator");
+        setLayout(null);
+        setResizable(false);
+        getContentPane().setBackground(Color.BLACK);
+        addKeyListener(this);
+        setFocusable(true);
+
+        //Set app icon
+        calcLogo = new ImageIcon("src/calcLogo.png");
+        setIconImage(calcLogo.getImage());
+    }
+
+    private void textFieldSetup(){
+        textField = new JTextField();
+        textField.setBounds(0,0,FRAME_WIDTH - 10,100);
+        textField.setFont(textFieldFont);
+        textField.setHorizontalAlignment(JTextField.RIGHT);
+        textField.setBackground(Color.BLACK);
+        textField.setForeground(Color.WHITE);
+        textField.setEditable(false);
+
+        //Adding textField to frame
+        add(textField);
+    }
+
+    private void buttonsPanelSetup(){
+        buttonsPanel = new JPanel();
+        buttonsPanel.setBounds(0,100,410 ,415);
+        buttonsPanel.setLayout(new GridLayout(5,4,5,5));
+        buttonsPanel.setBackground(Color.BLACK);
+        buttonsPanel.setForeground(Color.BLACK);
+
+        //Adding buttons panel to frame
+        add(buttonsPanel);
+    }
+
+    private void buttonsSetup(){
+        //Initialize function buttons and add them to corresponding array
+        addButton = new JButton("+");
+        functionButtons[0] = addButton;
+
+        subButton = new JButton("-");
+        functionButtons[1] = subButton;
+
+        mulButton = new JButton("*");
+        functionButtons[2] = mulButton;
+
+        divButton = new JButton("/");
+        functionButtons[3] = divButton;
+
+        modButton = new JButton("%");
+        functionButtons[4] = modButton;
+
+        signSwapButton = new JButton("±");
+        functionButtons[5] = signSwapButton;
+
+        delButton = new JButton("D");
+        functionButtons[6] = delButton;
+
+        clrButton = new JButton("C");
+        functionButtons[7] = clrButton;
+
+        dotButton = new JButton(".");
+        functionButtons[8] = dotButton;
+
+        equButton = new JButton("=");
+        functionButtons[9] = equButton;
+
+        //Give function buttons colour
+        paintFunctionButtons();
+
+        //Set button font and add an ActionListener
+        for(JButton button : functionButtons){
+            button.setFont(buttonFont);
+            button.setForeground(Color.WHITE);
+            button.setFocusable(false);
+            button.addActionListener(this);
+        }
+
+        //Create number buttons,set their appearance and add them to numberButtons array
+        for(int i = 0; i<NUM_COUNT;i++){
+            numberButtons[i] = new JButton(String.valueOf(i));
+            numberButtons[i].setFont(buttonFont);
+            numberButtons[i].setBackground(Color.decode("#575e6b"));
+            numberButtons[i].setForeground(Color.WHITE);
+            numberButtons[i].setFocusable(false);
+            numberButtons[i].addActionListener(this);
+
+        }
+
+        //Add all buttons to buttons panel
+        configureButtonsPanel();
+
+    }
+
+    private void configureButtonsPanel(){
+        //First row
+        buttonsPanel.add(clrButton);
+        buttonsPanel.add(signSwapButton);
+        buttonsPanel.add(modButton);
+        buttonsPanel.add(divButton);
+
+        //Second row
+        buttonsPanel.add(numberButtons[7]);
+        buttonsPanel.add(numberButtons[8]);
+        buttonsPanel.add(numberButtons[9]);
+        buttonsPanel.add(mulButton);
+
+        //Third row
+        buttonsPanel.add(numberButtons[4]);
+        buttonsPanel.add(numberButtons[5]);
+        buttonsPanel.add(numberButtons[6]);
+        buttonsPanel.add(subButton);
+
+        //Fourth row
+        buttonsPanel.add(numberButtons[1]);
+        buttonsPanel.add(numberButtons[2]);
+        buttonsPanel.add(numberButtons[3]);
+        buttonsPanel.add(addButton);
+
+        //Fifth row
+        buttonsPanel.add(delButton);
+        buttonsPanel.add(numberButtons[0]);
+        buttonsPanel.add(dotButton);
+        buttonsPanel.add(equButton);
+    }
+
+    private void paintFunctionButtons(){
+        divButton.setBackground(Color.decode("#eba234"));
+        mulButton.setBackground(Color.decode("#eba234"));
+        addButton.setBackground(Color.decode("#eba234"));
+        subButton.setBackground(Color.decode("#eba234"));
+        equButton.setBackground(Color.decode("#eb8c34"));
+
+        clrButton.setBackground(Color.decode("#a69c98"));
+        signSwapButton.setBackground(Color.decode("#a69c98"));
+        modButton.setBackground(Color.decode("#a69c98"));
+
+        delButton.setBackground(Color.decode("#575e6b"));
+        dotButton.setBackground(Color.decode("#575e6b"));
+
+    }
+
+    private double getCurrentNumber(){
+        try {
+            return Double.parseDouble(textField.getText());
+        }
+        catch (NumberFormatException e){
+            return 0;
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        if(textField.getText().equals("Undefined")) textField.setText("");
+
+        for(int i = 0; i<NUM_COUNT;i++) {
+            if (e.getSource() == numberButtons[i]) {
+                textField.setText(textField.getText().concat(String.valueOf(i)));
+            }
+        }
+
+        if (textField.getText().isEmpty()) return;
+
+        if(e.getSource() == addButton){
+            calculator.setOperator('+',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(e.getSource() == subButton){
+            calculator.setOperator('-',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(e.getSource() == mulButton){
+            calculator.setOperator('*',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(e.getSource() == divButton){
+            calculator.setOperator('/',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(e.getSource() == modButton){
+            calculator.setOperator('%',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(e.getSource() == dotButton){
+            if(!textField.getText().contains("."))
+                textField.setText(textField.getText().concat("."));
+        }
+        else if(e.getSource() == equButton){
+            String result = calculator.calculate(getCurrentNumber());
+            textField.setText(result);
+        }
+        else if(e.getSource() == delButton){
+            String current = textField.getText();
+            if(!current.isEmpty()){
+                textField.setText(current.substring(0, current.length() - 1));
+            }
+        }
+        else if(e.getSource() == clrButton){
+            calculator.clear();
+            textField.setText("");
+        }
+        else if(e.getSource() == signSwapButton){
+            try{
+                double temp = Double.parseDouble(textField.getText());
+                temp *= -1;
+                textField.setText(String.valueOf(temp));
+            }
+            catch (NumberFormatException ignored) {}
+        }
+
+    }
+
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int code = e.getKeyCode();
+        char keyChar = e.getKeyChar();
+
+        if(Character.isDigit(keyChar)){
+            textField.setText(textField.getText().concat(String.valueOf(keyChar)));
+        }
+        else if(keyChar == '+') {
+            calculator.setOperator('+',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(keyChar == '-') {
+            calculator.setOperator('-',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(keyChar == '*') {
+            calculator.setOperator('*',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(keyChar == '/') {
+            calculator.setOperator('/',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(keyChar == '%') {
+            calculator.setOperator('%',getCurrentNumber());
+            textField.setText("");
+        }
+        else if(keyChar == '.') {
+            if(!textField.getText().contains("."))
+                textField.setText(textField.getText().concat("."));
+
+        }
+        else if (code == KeyEvent.VK_ENTER || keyChar == '=') {
+            String result = calculator.calculate(getCurrentNumber());
+            textField.setText(result);
+        }
+        else if (code == KeyEvent.VK_BACK_SPACE) {
+            String current = textField.getText();
+            if(!current.isEmpty()){
+                textField.setText(current.substring(0, current.length() - 1));
+            }
+        }
+        else if (code == KeyEvent.VK_ESCAPE) {
+            calculator.clear();
+            textField.setText("");
+        }
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+}
