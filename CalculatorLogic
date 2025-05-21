@@ -1,0 +1,46 @@
+public class CalculatorLogic {
+
+    private double numberA = 0;
+    private double numberB = 0;
+    private double result = 0;
+    private char operator = ' ';
+
+    public void setOperator(char operator, double currentNumber) {
+        this.operator = operator;
+        this.numberA = currentNumber;
+    }
+
+    public String calculate(double currentNumber) {
+        this.numberB = currentNumber;
+
+        switch (operator) {
+            case '+':
+                result = numberA + numberB;
+                break;
+            case '-':
+                result = numberA - numberB;
+                break;
+            case '*':
+                result = numberA * numberB;
+                break;
+            case '/':
+                if (numberB == 0) return "Undefined";
+                result = numberA / numberB;
+                break;
+            case '%':
+                if (numberB == 0) return "Undefined";
+                result = numberA % numberB;
+                break;
+            default:
+                return String.valueOf(currentNumber);
+        }
+        numberA = result;
+        return String.valueOf(result);
+    }
+
+    public void clear() {
+        numberA = numberB = result = 0;
+        operator = ' ';
+    }
+
+}
